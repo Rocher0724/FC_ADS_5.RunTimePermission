@@ -18,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView mRecyclerView ;
     ArrayList<User> datas;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,12 +54,13 @@ public class MainActivity extends AppCompatActivity {
     // 1. 권한체크
     @TargetApi(Build.VERSION_CODES.M)
     private void checkPermission() {
-        // 1.1 런타임 권한체크
+        // 1.1 런타임 권한체크 (권한을 추가할때 1.2 목록작성과 2.1 권한체크에도 추가해야한다.)
         if ( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                || checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED
+                || checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
 
             // 1.2 요청할 권한 목록 작성
-            String permArr[] = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE};
+            String permArr[] = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE, Manifest.permission.READ_CONTACTS};
 
             // 1.3 시스템에 권한요청
             requestPermissions(permArr, REQ_CODE);
@@ -74,7 +77,9 @@ public class MainActivity extends AppCompatActivity {
 
         if( requestCode == REQ_CODE) {
             // 2.1 배열에 넘긴 런타임 권한을 체크해서 승인이 됐으면
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
                 // 2.2 프로그램 실행
                 loadData();
             } else {
@@ -89,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     private  void loadData() {
         Toast.makeText(this, "프로그램을 실행합니다.", Toast.LENGTH_SHORT).show();
         // 3.1 Data를 불러온다.
-        DataLoader data = new DataLoader();
+        DataLoader data = new DataLoader(this);
         datas = data.getDatas();
 
         // 3.2 리사이클러뷰 세팅
