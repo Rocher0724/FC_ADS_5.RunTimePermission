@@ -35,7 +35,7 @@ public class DataLoader {
         // 주소록 URI : ContactsContract.Contacts.CONTENT_URI
         //              HAS_PHONE_NUMBER : 전화번호가 있는지 확인하는 상수
 
-        Cursor cursor = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI // 데이터 주소
+        Cursor cursor = resolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI // 데이터 주소
                             , projections // 가져올 데이터 컬럼명 배열
                             , null        // 조건절에 들어가는 컬럼명들 지정
                             , null        // 지정된 컬럼명과 매핑되는 실제 조건 값

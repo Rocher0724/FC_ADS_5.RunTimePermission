@@ -1,40 +1,19 @@
-package choongyul.android.com.runtimepermission;
+## Permission check를 해야할 때 main에 붙이고 수정하여 사용하자 
 
-import android.Manifest;
-import android.annotation.TargetApi;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.widget.Toast;
+``` java
 
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity {
-
-    RecyclerView mRecyclerView ;
-    ArrayList<User> datas;
-
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        // 버전체크해서 마시멜로우보다 낮으면 런타임 권한 체크를 하지 않는다.
+        // 버전체크해서 마시멜로우보다 낮으면 런타임 권한 체크를 하지 않는다. 이부분은 따로 메소드로 만들어도 좋다. 
+        // 이전 사용은 onCreate 에서 했었다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkPermission();
         } else {
+            // 체크 이후 실행하는 메소드
             loadData();
         }
     }
 
+    // 여기서 코드는 임의로 지정해 준 숫자이다.
     private final int REQ_CODE = 100;
-
 
     // 1. 권한체크
     @TargetApi(Build.VERSION_CODES.M)
@@ -75,18 +54,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 3. 데이터 읽어오기(시스템실행)
-    private  void loadData() {
-        Toast.makeText(this, "프로그램을 실행합니다.", Toast.LENGTH_SHORT).show();
-        // 3.1 Data를 불러온다.
-        DataLoader data = new DataLoader(this);
-        datas = data.getDatas();
-
-        // 3.2 리사이클러뷰 세팅
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        CardAdapter adapter = new CardAdapter(datas, this);
-        mRecyclerView.setAdapter(adapter);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-    }
-
-}
+```
