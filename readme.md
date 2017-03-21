@@ -2,56 +2,81 @@
 
 ``` java
 
-        // 버전체크해서 마시멜로우보다 낮으면 런타임 권한 체크를 하지 않는다. 이부분은 따로 메소드로 만들어도 좋다. 
-        // 이전 사용은 onCreate 에서 했었다.
+       // mainActivity에서 권한체크 메소드로 활용을 하자!
+	// === MainActivity에서 선언해야 할 것 ===
+	//public final int REQ_PERMISSION = 100;
+	// === onCreate 에서 불러와야 할것 ===
+	// checkVersion();
+    public final String PERMISSION_ARRAY[] = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ,   Manifest.permission.CAMERA
+            // TODO 원하는 permission 추가 또는 수정하기 
+    };
+
+    public void checkVersion(int REQ_PERMISSION) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            checkPermission();
+            if( checkPermission(REQ_PERMISSION) ) {
+                return;
+            }
         } else {
-            // 체크 이후 실행하는 메소드
-            loadData();
+            return;
         }
     }
 
-    // 여기서 코드는 임의로 지정해 준 숫자이다.
-    private final int REQ_CODE = 100;
-
-    // 1. 권한체크
     @TargetApi(Build.VERSION_CODES.M)
-    private void checkPermission() {
+    public boolean checkPermission(int REQ_PERMISSION) {
         // 1.1 런타임 권한체크 (권한을 추가할때 1.2 목록작성과 2.1 권한체크에도 추가해야한다.)
-        if ( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-
-            // 1.2 요청할 권한 목록 작성
-            String permArr[] = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE, Manifest.permission.READ_CONTACTS};
-
-            // 1.3 시스템에 권한요청
-            requestPermissions(permArr, REQ_CODE);
-
-        } else {
-            loadData();
-        }
-    }
-
-    // 2. 권한체크 후 콜백 - 사용자가 확인 후 시스템이 호출하는 함수
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if( requestCode == REQ_CODE) {
-            // 2.1 배열에 넘긴 런타임 권한을 체크해서 승인이 됐으면
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                // 2.2 프로그램 실행
-                loadData();
-            } else {
-                Toast.makeText(this, "권한을 허용하지 않으시면 프로그램을 실행할 수 없습니다.", Toast.LENGTH_SHORT).show();
-                // 선택 : 1 종료, 2 권한체크 다시물어보기 할수도 있다. 일단은 끝내기
-                finish();
+        boolean permCheck = true;
+        for(String perm : PERMISSION_ARRAY) {
+            if ( this.checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED ) {
+                permCheck = false;
+                break;
             }
         }
+
+        // 1.2 퍼미션이 모두 true 이면 프로그램 실행
+        if(permCheck) {
+            // TODO 퍼미션이 승인 되었을때 해야하는 작업이 있다면 여기에서 실행하자.
+            
+            return true;
+        } else {
+            // 1.3 퍼미션중에 false가 있으면 시스템에 권한요청
+            this.requestPermissions(PERMISSION_ARRAY, REQ_PERMISSION);
+            return false;
+        }
+    }
+
+    
+     //2. 권한체크 후 콜백 - 사용자가 확인 후 시스템이 호출하는 함수
+     @Override
+     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+         if( requestCode == REQ_PERMISSION) {
+
+             if( onCheckResult(grantResults)) {
+                 // TODO 퍼미션이 승인 되었을때 해야하는 작업이 있다면 여기에서 실행하자.
+
+                 return;
+             } else {
+                 Toast.makeText(this, "권한을 활성화 해야 모든 기능을 이용할 수 있습니다.", Toast.LENGTH_SHORT).show();
+                 // 선택 : 1 종료, 2 권한체크 다시물어보기, 3 권한 획득하지 못한 기능만 정지시키기
+                 // finish();
+             }
+         }
+     }
+    public static boolean onCheckResult(int[] grantResults) {
+
+        boolean checkResult = true;
+        // 권한 처리 결과 값을 반복문을 돌면서 확인한 후 하나라도 승인되지 않았다면 false를 리턴해준다.
+        for(int result : grantResults) {
+            if( result != PackageManager.PERMISSION_GRANTED) {
+                checkResult = false;
+                break;
+            }
+        }
+        return checkResult;
+    }
     }
 
 ```
